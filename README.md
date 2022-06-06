@@ -4,12 +4,12 @@
 
 This repository contains an experimental Linux kernel driver for the
 battery health control WMI interface of Acer laptops.  It can be
-used to enable/disable the battery health mode that can be enabled
-through the "Acer Care Center" program on Windows.
+used to enable/disable a battery health mode that limits the battery
+charge to 80%.
 
-So far, the driver has only been tested on an Acer Swift 3
-(SF314-34). Any feedback on how it works on other Acer laptops
-would be appreciated.
+So far the driver has been tested on an Acer Swift 3
+(SF314-34) and an [Acer Aspire 5 A515-45G-R5A1](https://github.com/linrunner/TLP/issues/596#issuecomment-1146784888).
+Any feedback on how it works on other Acer laptops would be appreciated.
 
 ## Building
 
