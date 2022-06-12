@@ -3,9 +3,13 @@
 ## Description
 
 This repository contains an experimental Linux kernel driver for the
-battery health control WMI interface of Acer laptops.  It can be
-used to enable/disable a battery health mode that limits the battery
-charge to 80%.
+battery health control WMI interface of Acer laptops.  It can be used
+to control two battery-related features of Acer laptops that Acer
+provides through the Acer Care Center on Windows: a health mode that
+limits the battery charge to 80% with the goal of preserving your
+battery's capacity and a battery calibration mode which puts your
+battery through a controlled charge-discharge cycle to provide more
+accurate battery capacity estimates.
 
 So far the driver has been tested on an Acer Swift 3
 (SF314-34) and an [Acer Aspire 5 A515-45G-R5A1](https://github.com/linrunner/TLP/issues/596#issuecomment-1146784888).
@@ -26,11 +30,13 @@ make
 ## Using
 
 Loading the module without any parameters does not
-change the health mode settings of your system:
+change any health or calibration mode settings of your system:
 
 ```
 insmod acer-wmi-battery.ko
 ```
+
+### Health mode
 
 The charge limit can then be enabled as follows:
 ```
@@ -43,6 +49,24 @@ time:
 insmod acer-wmi-battery.ko enable_health_mode=1
 ```
 
+### Calibration mode
+
+Before attempting the battery calibration, connect
+your laptop to a power supply. The calibration mode
+can be started as follows:
+```
+echo 1 > /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
+```
 
 
-
+The calibration disables health mode and charges
+to 100%. Then it discharges and recharges the battery
+once. This can take a long time and for accurate
+capacity estimates the laptop should not be used
+during this process. After the discharge-charge cycle
+the calibration mode should be manually disabled
+since the WMI event that indicates the completion
+of the calibration is not yet handled by the module:
+```
+echo 0 > /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
+```

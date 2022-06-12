@@ -4,15 +4,7 @@
  *
  * This is a driver for the WMI battery health control interface found
  * on some Acer laptops.  This interface allows to enable/disable a
- * battery charge limit ("health mode").
- * There is also a "calibration mode" which is not yet supported by
- * this driver.
- *
- * TODO Should it be possible to control several batteries? It seems that
- * Acer Care Center always invokes the WMI method for the first battery
- * only.
- *
- * TODO Figure out how to use the calibration mode.
+ * battery charge limit ("health mode") and to calibrate the battery.
  */
 
 #include <linux/init.h>
@@ -58,14 +50,15 @@ struct set_battery_health_control_output {
 
 enum battery_mode { HEALTH_MODE = 1, CALIBRATION_MODE = 2 };
 
-static bool health_mode = 0;
-
-struct battery_status {
-	bool health_mode;
-	bool calibration_mode;
+struct battery_info {
+	s8 health_mode;
+	s8 calibration_mode;
 };
 
-static short enable_health_mode = 0;
+static struct battery_info battery_status;
+
+static short enable_health_mode = -1;
+
 module_param(enable_health_mode, short, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 MODULE_PARM_DESC(
 	enable_health_mode,
@@ -73,15 +66,20 @@ MODULE_PARM_DESC(
 	"initialization (default value < 0: do not modify existing settings.)");
 
 static acpi_status
-get_battery_health_control_status(u8 function_query,
-				  struct battery_status *bat_status)
+get_battery_health_control_status(struct battery_info *bat_status)
 {
 	union acpi_object *obj;
 	acpi_status status;
 
+	/* Acer Care Center seems to always call the WMI method
+	   with fixed parameters. This yields information about
+	   the availability and state of both health and
+	   calibration mode. The modes probably apply to
+	   all batteries of the system - if there are
+	   Acer laptops with multiple batteries? */
 	struct get_battery_health_control_status_input params = {
 		.uBatteryNo = 0x1,
-		.uFunctionQuery = function_query,
+		.uFunctionQuery = 0x1,
 		.uReserved = { 0x0, 0x0 }
 	};
 	struct get_battery_health_control_status_output ret;
@@ -112,23 +110,27 @@ get_battery_health_control_status(u8 function_query,
 		return AE_ERROR;
 	}
 
-	bat_status->health_mode = ret.uFunctionStatus[0] & HEALTH_MODE;
-	bat_status->calibration_mode = ret.uFunctionStatus[0] &
-				       CALIBRATION_MODE;
+	bat_status->health_mode = ret.uFunctionList & HEALTH_MODE ?
+					  ret.uFunctionStatus[0] > 0 :
+					  -1;
+	bat_status->calibration_mode = ret.uFunctionList & CALIBRATION_MODE ?
+					       ret.uFunctionStatus[1] > 0 :
+					       -1;
 
 	kfree(obj);
 
 	return status;
 }
 
-static acpi_status set_battery_health_control(u8 battery_no, u8 function,
-					      bool function_status)
+static acpi_status set_battery_health_control(u8 function, bool function_status)
 {
 	union acpi_object *obj;
 	acpi_status status;
 
+	/* Cf. comment regarding constant argument values in
+	   get_battery_health_control_status. */
 	struct set_battery_health_control_input params = {
-		.uBatteryNo = battery_no,
+		.uBatteryNo = 0x1,
 		.uFunctionMask = function,
 		.uFunctionStatus = (u8)function_status,
 		.uReservedIn = { 0x0, 0x0, 0x0, 0x0, 0x0 }
@@ -140,7 +142,6 @@ static acpi_status set_battery_health_control(u8 battery_no, u8 function,
 	};
 
 	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
-
 	status = wmi_evaluate_method(WMI_GUID, 0, 21, &input, &output);
 
 	if (ACPI_FAILURE(status))
@@ -168,13 +169,51 @@ static acpi_status set_battery_health_control(u8 battery_no, u8 function,
 	return status;
 }
 
+static void print_modes(const char *prefix, bool print_if_empty,
+			bool health_mode, bool calib_mode)
+{
+	if (!health_mode && !calib_mode && !print_if_empty)
+		return;
+
+	pr_info("%s modes: %s%s%s\n", prefix, health_mode ? "health mode" : "",
+		health_mode && calib_mode ? ", " : "",
+		calib_mode ? "calibration mode" : "");
+}
+
+static void init_state(void)
+{
+	bool print_state_if_empty;
+	get_battery_health_control_status(&battery_status);
+
+	print_state_if_empty = true;
+	print_modes("available", print_state_if_empty,
+		    battery_status.health_mode >= 0,
+		    battery_status.calibration_mode >= 0);
+
+	print_state_if_empty = false;
+	print_modes("active", print_state_if_empty,
+		    battery_status.health_mode > 0,
+		    battery_status.calibration_mode > 0);
+}
+
+static void update_state(void)
+{
+	struct battery_info old_state = battery_status;
+	get_battery_health_control_status(&battery_status);
+	if (battery_status.calibration_mode != old_state.calibration_mode)
+		pr_info("%s calibration mode\n",
+			battery_status.calibration_mode ? "enabled" :
+							  "disabled");
+	if (battery_status.health_mode != old_state.health_mode)
+		pr_info("%s health mode\n",
+			battery_status.health_mode ? "enabled" : "disabled");
+}
+
 static ssize_t health_mode_show(struct device_driver *driver, char *buf)
 {
-	int len;
-
-	len = sprintf(buf, "%d\n", health_mode);
+	int len = sprintf(buf, "%d\n", battery_status.health_mode);
 	if (len <= 0)
-		pr_err(" Invalid sprintf len: %d\n", len);
+		pr_err("Invalid sprintf len: %d\n", len);
 
 	return len;
 }
@@ -182,28 +221,53 @@ static ssize_t health_mode_show(struct device_driver *driver, char *buf)
 static ssize_t health_mode_store(struct device_driver *driver, const char *buf,
 				 size_t count)
 {
-	struct battery_status status;
 	bool param_val;
-	int err = kstrtobool(buf, &param_val);
+	int err;
+	if (battery_status.health_mode < 0)
+		return 0;
 
+	err = kstrtobool(buf, &param_val);
 	if (err)
 		return err;
 
-	health_mode = param_val;
+	set_battery_health_control(HEALTH_MODE, param_val);
 
-	pr_info("set health mode: %d\n", (int)health_mode);
-	set_battery_health_control(1, HEALTH_MODE, health_mode);
-	get_battery_health_control_status(HEALTH_MODE, &status);
+	return count;
+}
 
-	WARN_ON(status.health_mode != health_mode);
+static ssize_t calibration_mode_show(struct device_driver *driver, char *buf)
+{
+	int len = sprintf(buf, "%d\n", battery_status.calibration_mode);
+	if (len <= 0)
+		pr_err("Invalid sprintf len: %d\n", len);
+
+	return len;
+}
+
+static ssize_t calibration_mode_store(struct device_driver *driver,
+				      const char *buf, size_t count)
+{
+	bool param_val;
+	int err;
+
+	if (battery_status.calibration_mode < 0)
+		return 0;
+
+	err = kstrtobool(buf, &param_val);
+	if (err)
+		return err;
+
+	set_battery_health_control(CALIBRATION_MODE, param_val);
+	update_state();
 
 	return count;
 }
 
 static DRIVER_ATTR_RW(health_mode);
+static DRIVER_ATTR_RW(calibration_mode);
 
 static struct attribute *acer_wmi_battery_attrs[] = {
-	&driver_attr_health_mode.attr, NULL
+	&driver_attr_health_mode.attr, &driver_attr_calibration_mode.attr, NULL
 };
 
 ATTRIBUTE_GROUPS(acer_wmi_battery);
@@ -220,20 +284,14 @@ static struct wmi_driver acer_wmi_battery_driver = {
 
 static int __init acer_battery_init(void)
 {
-	struct battery_status status;
-
 	if (!wmi_has_guid(WMI_GUID)) {
 		pr_err("Acer battery control guid not found\n");
 		return -ENODEV;
 	}
 
-	if (enable_health_mode < 0) {
-		get_battery_health_control_status(HEALTH_MODE, &status);
-		health_mode = status.health_mode;
-	} else {
-		health_mode = (bool)enable_health_mode;
-		set_battery_health_control(1, HEALTH_MODE, health_mode);
-	}
+	if (enable_health_mode >= 0)
+		set_battery_health_control(HEALTH_MODE, enable_health_mode);
+	init_state();
 
 	return wmi_driver_register(&acer_wmi_battery_driver);
 }
