@@ -71,3 +71,9 @@ of the calibration is not yet handled by the module:
 ```
 echo 0 > /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
 ```
+
+### Related work
+
+There exists [another driver](https://github.com/maxco2/acer-battery-wmi) with
+similar functionality of which I have not been aware when starting the work
+on this driver. See this [issue](https://github.com/frederik-h/acer-wmi-battery/issues/2) for discussion.
