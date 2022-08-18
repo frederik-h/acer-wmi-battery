@@ -11,8 +11,9 @@ battery's capacity and a battery calibration mode which puts your
 battery through a controlled charge-discharge cycle to provide more
 accurate battery capacity estimates.
 
-So far the driver has been tested on an Acer Swift 3
-(SF314-34) and an [Acer Aspire 5 A515-45G-R5A1](https://github.com/linrunner/TLP/issues/596#issuecomment-1146784888).
+So far the driver has been reported to work on an Acer Swift 3
+(SF314-34), an [Acer Aspire 5 A515-45G-R5A1](https://github.com/linrunner/TLP/issues/596#issuecomment-1146784888),
+and an [Acer Enduro N3 Urban (EUN314A-51W)](https://github.com/frederik-h/acer-wmi-battery/issues/4).
 Any feedback on how it works on other Acer laptops would be appreciated.
 
 ## Building
