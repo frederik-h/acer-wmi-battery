@@ -231,6 +231,7 @@ static ssize_t health_mode_store(struct device_driver *driver, const char *buf,
 		return err;
 
 	set_battery_health_control(HEALTH_MODE, param_val);
+	update_state();
 
 	return count;
 }
