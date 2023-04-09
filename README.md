@@ -34,20 +34,20 @@ Loading the module without any parameters does not
 change any health or calibration mode settings of your system:
 
 ```
-insmod acer-wmi-battery.ko
+sudo insmod acer-wmi-battery.ko
 ```
 
 ### Health mode
 
 The charge limit can then be enabled as follows:
 ```
-echo 1 > /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
 ```
 
 Alternatively, you can enable it at module initialization
 time:
 ```
-insmod acer-wmi-battery.ko enable_health_mode=1
+sudo insmod acer-wmi-battery.ko enable_health_mode=1
 ```
 
 ### Calibration mode
@@ -56,7 +56,7 @@ Before attempting the battery calibration, connect
 your laptop to a power supply. The calibration mode
 can be started as follows:
 ```
-echo 1 > /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
+echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
 ```
 
 
@@ -69,7 +69,7 @@ the calibration mode should be manually disabled
 since the WMI event that indicates the completion
 of the calibration is not yet handled by the module:
 ```
-echo 0 > /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
+echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
 ```
 
 ### Related work
