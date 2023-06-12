@@ -105,7 +105,8 @@ get_battery_health_control_status(struct battery_info *bat_status)
 	ret = *((struct get_battery_health_control_status_output *)
 			obj->buffer.pointer);
 	if (obj->buffer.length != 8) {
-		pr_warn("Unknown buffer length %d\n", obj->buffer.length);
+		pr_err("WMI battery status call returned a buffer of "
+		       "unexpected length %d\n", obj->buffer.length);
 		kfree(obj);
 		return AE_ERROR;
 	}
@@ -159,9 +160,10 @@ static acpi_status set_battery_health_control(u8 function, bool function_status)
 	ret = *((struct set_battery_health_control_output *)obj->buffer.pointer);
 
 	if (obj->buffer.length != 4) {
-		pr_warn("Unknown buffer length %d\n", obj->buffer.length);
-		kfree(obj);
-		return AE_ERROR;
+		pr_err("WMI battery status set operation returned "
+			"a buffer of unexpected length %d\n",
+			obj->buffer.length);
+		status = AE_ERROR;
 	}
 
 	kfree(obj);
@@ -180,10 +182,14 @@ static void print_modes(const char *prefix, bool print_if_empty,
 		calib_mode ? "calibration mode" : "");
 }
 
-static void init_state(void)
+static acpi_status init_state(void)
 {
 	bool print_state_if_empty;
-	get_battery_health_control_status(&battery_status);
+	acpi_status status;
+	status = get_battery_health_control_status(&battery_status);
+
+	if (ACPI_FAILURE(status))
+		return status;
 
 	print_state_if_empty = true;
 	print_modes("available", print_state_if_empty,
@@ -194,6 +200,8 @@ static void init_state(void)
 	print_modes("active", print_state_if_empty,
 		    battery_status.health_mode > 0,
 		    battery_status.calibration_mode > 0);
+
+	return status;
 }
 
 static void update_state(void)
@@ -290,9 +298,17 @@ static int __init acer_battery_init(void)
 		return -ENODEV;
 	}
 
-	if (enable_health_mode >= 0)
-		set_battery_health_control(HEALTH_MODE, enable_health_mode);
-	init_state();
+	if (enable_health_mode >= 0) {
+		acpi_status status;
+		status = set_battery_health_control(HEALTH_MODE,
+						    enable_health_mode);
+
+		if (ACPI_FAILURE(status))
+			return -EIO;
+	}
+
+	if (ACPI_FAILURE(init_state()))
+		return -EIO;
 
 	return wmi_driver_register(&acer_wmi_battery_driver);
 }
