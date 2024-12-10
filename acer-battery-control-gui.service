@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=root  # Run as root
-ExecStart=/usr/bin/python3 /etc/acer-battery-control-gui/backend.py  # Thay đổi đường dẫn
+User=root
+ExecStart=/usr/bin/python3 /etc/acer-battery-control-gui/backend.py
 Restart=on-failure
-RestartSec=10
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target
