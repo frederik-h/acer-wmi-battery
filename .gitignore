@@ -50,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#pkg build
+*.tar.zst
+src
+pkg
