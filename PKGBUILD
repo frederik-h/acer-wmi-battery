@@ -49,6 +49,7 @@ package() {
   install -Dm644 acer-care-center_48x48.png "${pkgdir}/usr/share/icons/hicolor/48x48/apps/acer-battery-control.png"
   # Install other files
   post_install() {
+    ln -s /usr/lib/systemd/system/acer-battery-control-gui.service /etc/systemd/system/
     systemctl enable acer-battery-control-gui.service
     systemctl restart acer-battery-control-gui.service
     systemctl restart polkit
