@@ -17,7 +17,7 @@ class BatteryControl(QWidget):
         super().__init__()
 
         self.settings = QSettings("acer-battery-control", "BatteryControl")
-        self.module_path = self.settings.value("module_path", "", type=str)
+        self.module_path = self.settings.value("module_path", "/etc/acer-battery-control-gui/", type=str)
 
         self.initUI()
         self.restoreLocation()
@@ -129,7 +129,7 @@ class BatteryControl(QWidget):
 
     def load_module(self):
         if self.module_path:
-            command = f"make && pkexec insmod {self.module_path}/acer-wmi-battery.ko"
+            command = f"pkexec make && pkexec insmod {self.module_path}/acer-wmi-battery.ko"
             try:
                 subprocess.run(command, shell=True, check=True)
             except subprocess.CalledProcessError as e:

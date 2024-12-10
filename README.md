@@ -1,79 +1,60 @@
 # acer-wmi-battery
 
-## Description
+## Mô tả
 
-This repository contains an experimental Linux kernel driver for the
-battery health control WMI interface of Acer laptops.  It can be used
-to control two battery-related features of Acer laptops that Acer
-provides through the Acer Care Center on Windows: a health mode that
-limits the battery charge to 80% with the goal of preserving your
-battery's capacity and a battery calibration mode which puts your
-battery through a controlled charge-discharge cycle to provide more
-accurate battery capacity estimates.
+Repository này chứa một driver kernel Linux thử nghiệm cho giao diện WMI điều khiển tình trạng pin của máy tính xách tay Acer. Nó có thể được sử dụng để điều khiển hai tính năng liên quan đến pin mà Acer cung cấp thông qua Acer Care Center trên Windows: chế độ bảo vệ pin (giới hạn sạc pin ở mức 80% nhằm bảo vệ dung lượng pin) và chế độ hiệu chỉnh pin (thực hiện chu kỳ sạc-xả có kiểm soát để cung cấp ước tính dung lượng pin chính xác hơn).
 
-So far the driver has been reported to work on an Acer Swift 3
-(SF314-34), an [Acer Aspire 5 A515-45G-R5A1](https://github.com/linrunner/TLP/issues/596#issuecomment-1146784888),
-and an [Acer Enduro N3 Urban (EUN314A-51W)](https://github.com/frederik-h/acer-wmi-battery/issues/4).
-Any feedback on how it works on other Acer laptops would be appreciated.
+Các thiết bị hoạt động
+- Acer Swift 3 SF314-34
+- Acer Aspire 5 A515-45G-R5A1
+- Acer Enduro N3 Urban EUN314A-51W
+- Acer Nitro 5 AN515-45 (của tôi) (OS: Manjaro, kernel: linux 6.10.13-3 )
 
-## Building
+## Cài đặt
 
-Make sure that you have the kernel headers for your kernel installed
-and type `make` in the cloned project directory. In more detail,
-on a Debian or Ubuntu system, you can build by:
+Driver này có thể được cài đặt từ AUR:
+```bash
+yay -U acer-wmi-battery-gui{version}.pkg.tar.zst
 ```
+
+## Sử dụng
+
+### Chế độ bảo vệ pin
+
+Chế độ này giới hạn sạc pin ở mức 80% để kéo dài tuổi thọ pin.  Bạn có thể bật/tắt chế độ này trong ứng dụng GUI.
+
+### Chế độ hiệu chỉnh pin
+
+Chế độ này thực hiện chu kỳ sạc-xả pin để hiệu chỉnh lại dung lượng pin.
+
+**Lưu ý:**
+
+* Trước khi bắt đầu hiệu chỉnh pin, hãy kết nối máy tính xách tay với nguồn điện.
+* Quá trình hiệu chỉnh có thể mất nhiều thời gian.  Để có kết quả chính xác, không nên sử dụng máy tính trong quá trình này.
+* Sau khi hoàn thành chu kỳ xả-sạc, bạn nên tắt chế độ hiệu chỉnh pin bằng tay.
+
+
+## Xây dựng từ nguồn
+
+Nếu bạn muốn tự build driver từ nguồn, hãy chắc chắn rằng bạn đã cài đặt kernel headers và chạy lệnh `make` trong thư mục project:
+
+```bash
 sudo apt install build-essential linux-headers-$(uname -r) git
 git clone https://github.com/frederik-h/acer-wmi-battery.git
 cd acer-wmi-battery
 make
 ```
 
-## Using
+Sau đó, bạn có thể nạp module bằng lệnh:
 
-Loading the module without any parameters does not
-change any health or calibration mode settings of your system:
-
-```
+```bash
 sudo insmod acer-wmi-battery.ko
 ```
 
-### Health mode
 
-The charge limit can then be enabled as follows:
-```
-echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
-```
+## Dự án liên quan
 
-Alternatively, you can enable it at module initialization
-time:
-```
-sudo insmod acer-wmi-battery.ko enable_health_mode=1
+Một driver khác có chức năng tương tự: [acer-battery-wmi](https://github.com/maxco2/acer-battery-wmi).
 ```
 
-### Calibration mode
-
-Before attempting the battery calibration, connect
-your laptop to a power supply. The calibration mode
-can be started as follows:
-```
-echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
-```
-
-
-The calibration disables health mode and charges
-to 100%. Then it discharges and recharges the battery
-once. This can take a long time and for accurate
-capacity estimates the laptop should not be used
-during this process. After the discharge-charge cycle
-the calibration mode should be manually disabled
-since the WMI event that indicates the completion
-of the calibration is not yet handled by the module:
-```
-echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
-```
-
-### Related work
-
-There exists [another driver](https://github.com/maxco2/acer-battery-wmi) with
-similar functionality of which I have not been aware when starting the work
-on this driver. See this [issue](https://github.com/frederik-h/acer-wmi-battery/issues/2) for discussion.
+README này sẽ giúp người dùng hiểu rõ hơn về dự án và cách sử dụng.  Nó cũng cung cấp hướng dẫn cài đặt đơn giản từ AUR, giúp người dùng dễ dàng cài đặt và sử dụng driver.
