@@ -110,30 +110,32 @@ class BatteryControl(QWidget):
             print(f"Error reading health_mode: {e}")
 
     def toggle_health_mode(self):
-        value = 1 if self.toggle_button.isChecked() else 0
-        command = f"echo {value} | pkexec tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode"
-        try:
-            subprocess.run(command, shell=True, check=True)
-            self.update_toggle_state()
-        except subprocess.CalledProcessError as e:
-            print(f"Error toggling health mode: {e}")
+        command = "health_mode_on" if self.toggle_button.isChecked() else "health_mode_off"
+        self.send_command(command)
 
     def toggle_calibration_mode(self):
-        value = 1 if self.toggle_button_2.isChecked() else 0
-        command = f"echo {value} | pkexec tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode"
-        try:
-            subprocess.run(command, shell=True, check=True)
-            self.update_toggle_state()
-        except subprocess.CalledProcessError as e:
-            print(f"Error toggling calibration mode: {e}")
+        command = "calibration_mode_on" if self.toggle_button_2.isChecked() else "calibration_mode_off"
+        self.send_command(command)
 
     def load_module(self):
         if self.module_path:
-            command = f"pkexec make && pkexec insmod {self.module_path}/acer-wmi-battery.ko"
-            try:
-                subprocess.run(command, shell=True, check=True)
-            except subprocess.CalledProcessError as e:
-                print(f"Error loading module: {e}")
+            command = f"make_and_insmod {self.module_path}"  # Send combined command
+            response = self.send_command(command)
+            print(response) # Print both make and insmod output
+
+    def send_command(self, command):
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock_path = "/tmp/acer-battery-control.sock"
+        try:
+            sock.connect(sock_path)
+            sock.sendall(command.encode("utf-8"))
+            response = sock.recv(4096).decode("utf-8") # Receive response from backend
+            sock.close()
+            self.update_toggle_state()
+            return response
+        except Exception as e:
+            print(f"Error communicating with backend: {e}")
+            return "Error"
 
     def closeEvent(self, event):
         self.settings.setValue("geometry", self.saveGeometry())  # Save window geometry

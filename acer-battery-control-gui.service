@@ -1,0 +1,13 @@
+[Unit]
+Description=Acer Battery Control GUI Backend
+After=network.target
+
+[Service]
+Type=simple
+User=root  # Run as root
+ExecStart=/usr/bin/python3 /etc/acer-battery-control-gui/backend.py  # Thay đổi đường dẫn
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
