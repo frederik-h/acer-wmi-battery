@@ -1,6 +1,37 @@
 #!/usr/bin/make -f
 
+# Compat level 13 for debhelper-compat
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 %:
 	dh $@ --with python3
+
+override_dh_install:
+	dh_install
+	# Install executable scripts
+	install -D -m 0755 gui.py $(CURDIR)/debian/acer-battery-control-gui/usr/bin/acer-battery-control-gui
+	install -D -m 0755 backend.py $(CURDIR)/debian/acer-battery-control-gui/etc/acer-battery-control-gui/backend.py
+
+	# Install rules and service files
+	install -D -m 0644 acer-battery-control.rules $(CURDIR)/debian/acer-battery-control-gui/usr/share/polkit-1/rules.d/acer-battery-control.rules
+	install -D -m 0644 acer-battery-control-gui.service $(CURDIR)/debian/acer-battery-control-gui/lib/systemd/system/acer-battery-control-gui.service
+
+	# Install C source and Makefile
+	install -D -m 0755 acer-wmi-battery.c $(CURDIR)/debian/acer-battery-control-gui/etc/acer-battery-control-gui/acer-wmi-battery.c
+	install -D -m 0755 Makefile $(CURDIR)/debian/acer-battery-control-gui/etc/acer-battery-control-gui/Makefile
+
+	# Install desktop file and icons
+	install -D -m 0644 acer-battery-health.desktop $(CURDIR)/debian/acer-battery-control-gui/share/applications/acer-battery-health.desktop
+	install -D -m 0644 acer-care-center_256x256.png $(CURDIR)/debian/acer-battery-control-gui/share/icons/hicolor/256x256/apps/acer-battery-control.png
+	install -D -m 0644 acer-care-center_48x48.png $(CURDIR)/debian/acer-battery-control-gui/share/icons/hicolor/48x48/apps/acer-battery-control.png
+
+override_dh_auto_build:
+	dh_auto_build
+
 override_dh_auto_install:
-	$(MAKE) -C .. install DESTDIR=$(CURPREFIX)
+	dh_auto_install
+	# Install python
+	python3 -m compileall -d $(CURDIR)/debian/acer-battery-control-gui /usr/lib/python3/dist-packages/acer_battery_control
+
+override_dh_compress:
+	dh_compress -X.pyc -X__pycache__

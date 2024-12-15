@@ -1,0 +1,13 @@
+acer-battery-control-gui (1.1.0-2) unstable; urgency=low
+
+  * Fixed a bug in the GUI.
+  * Added a new feature.
+
+ -- KhanhPNQ phamngocquockhanh2004@gmail.com  Tue, 10 Dec 2024 10:00:00 +0700
+
+ acer-battery-control-gui (1.1.1-1) unstable; urgency=low
+
+  * Fix service backend.
+  * Added update script build for debian.
+
+ -- KhanhPNQ phamngocquockhanh2004@gmail.com  Sun, 15 Dec 2023 10:00:00 +0700

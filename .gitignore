@@ -55,3 +55,8 @@ dkms.conf
 *.tar.zst
 src
 pkg
+debian/files
+debian/.debhelper
+debian/acer-battery-control-gui
+debian/acer-battery-control-gui*
+debian/debhelper-build-stamp

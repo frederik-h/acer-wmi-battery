@@ -1,8 +1,15 @@
-Package: acer-battery-control-gui  # Tên gói
-Version: 1.0.0             # Phiên bản gói
-Section: utils               # Phần mềm thuộc nhóm nào (utils, admin, graphics,...)
-Priority: optional          # Mức độ quan trọng (optional, standard, important)
-Architecture: amd64            # Kiến trúc (all, amd64, i386,...)
-Depends: python3, python3-pyqt5 # Danh sách các gói phần mềm cần thiết
-Maintainer: KhanhPNQ phamngocquockhanh2004@gmail.com  # Thông tin người bảo trì
-Description: A simple GUI to control Acer battery health mode.  # Mô tả gói
+Source: acer-battery-control-gui
+Section: utils
+Priority: optional
+Maintainer: KhanhPNQ <phamngocquockhanh2004@gmail.com>
+Build-Depends: debhelper-compat (= 13), python3, python3-setuptools, python3-pyqt5
+Standards-Version: 4.6.1
+Homepage: https://github.com/quockhanh2004/acer-battery-control-gui  # Thay bằng URL trang chủ của bạn (nếu có)
+
+Package: acer-battery-control-gui
+Architecture: any
+Depends: ${python3:Depends}, python3-pyqt5, ${shlibs:Depends}
+Description: A simple GUI to control Acer battery health mode.
+ .
+ This tool allows you to change the battery health mode on Acer laptops.
+ It provides a graphical interface for easy management.

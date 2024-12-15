@@ -22,7 +22,7 @@ def main():
     make_result_str = make_result.decode("utf-8") # Decode to string
 
     if "error" not in make_result_str.lower():  # Check if make was successful
-        insmod_command = f"insmod {default_module_path}/acer-wmi-battery.ko"  # Only run insmod if make succeeded
+        insmod_command = f"insmod {default_module_path}acer-wmi-battery.ko"  # Only run insmod if make succeeded
         insmod_result = run_command(insmod_command)
         response = f"Make output:\n{make_result}\n\nInsmod output:\n{insmod_result}"
     else:
@@ -45,13 +45,13 @@ def main():
                 command = data.strip()  # Get command from GUI
                        
                 if command == "health_mode_on":
-                    response = run_command("sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode <<< 1")
+                    response = run_command("echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode")
                 elif command == "health_mode_off":
-                    response = run_command("sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode <<< 0")
+                    response = run_command("echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode")
                 elif command == "calibration_mode_on":
-                     response = run_command("sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode <<< 1")
+                     response = run_command("echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode")
                 elif command == "calibration_mode_off":
-                     response = run_command("sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode <<< 0")
+                     response = run_command("echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode")
                 elif command.startswith("insmod"):  # Example: "insmod /path/to/module.ko"
                     response = run_command(f"{command}")  # Run insmod with sudo
                 elif command == "ping":

@@ -1,6 +1,6 @@
 pkgname=acer-battery-control-gui
-pkgver=1.1.0
-pkgrel=2
+pkgver=1.1.1
+pkgrel=1
 pkgdesc="A simple GUI to control Acer battery health mode."
 arch=("any")
 url="Your project URL"
