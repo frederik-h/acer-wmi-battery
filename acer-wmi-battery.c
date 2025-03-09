@@ -9,8 +9,10 @@
 
 #include <linux/init.h>
 #include <linux/kernel.h>
+#include <linux/limits.h>
 #include <linux/module.h>
 #include <linux/acpi.h>
+#include <linux/unaligned.h>
 #include <linux/wmi.h>
 
 MODULE_DESCRIPTION("Acer battery health control driver");
@@ -64,6 +66,40 @@ MODULE_PARM_DESC(
 	enable_health_mode,
 	"Turn battery health mode on (value > 0) or off (value = 0) during module "
 	"initialization (default value < 0: do not modify existing settings.)");
+
+static acpi_status get_battery_information(u32 index, u32 battery, u32 *result)
+{
+	u32 args[2] = { index, battery };
+	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
+	struct acpi_buffer input = { sizeof(args), args };
+	union acpi_object *obj;
+	acpi_status status;
+
+	status = wmi_evaluate_method(WMI_GUID, 0, 19, &input, &output);
+	if (ACPI_FAILURE(status))
+		return status;
+
+	obj = output.pointer;
+	if (!obj)
+		return AE_ERROR;
+
+	if (obj->type != ACPI_TYPE_BUFFER) {
+		kfree(obj);
+		return AE_ERROR;
+	}
+
+	if (obj->buffer.length != sizeof(u32)) {
+		pr_err("WMI battery information call returned buffer of unexpected length %u\n",
+		       obj->buffer.length);
+		kfree(obj);
+		return AE_ERROR;
+	}
+
+	*result = get_unaligned_le32(obj->buffer.pointer);
+	kfree(obj);
+
+	return AE_OK;
+}
 
 static acpi_status
 get_battery_health_control_status(struct battery_info *bat_status)
@@ -217,6 +253,28 @@ static void update_state(void)
 			battery_status.health_mode ? "enabled" : "disabled");
 }
 
+static ssize_t temperature_show(struct device_driver *driver, char *buf)
+{
+	acpi_status status;
+	u32 value;
+
+	/*
+	 * We always use battery number 0x1 to stay consistent with the
+	 * battery health mode interface.
+	 *
+	 * The information index 0x8 was taken from the
+	 * "Smart Battery Data Specification".
+	 */
+	status = get_battery_information(0x8, 0x1, &value);
+	if (ACPI_FAILURE(status))
+		return -EIO;
+
+	if (value > U16_MAX)
+		return -ENXIO;
+
+	return sysfs_emit(buf, "%u\n", (value - 2731) * 100);
+}
+
 static ssize_t health_mode_show(struct device_driver *driver, char *buf)
 {
 	int len = sprintf(buf, "%d\n", battery_status.health_mode);
@@ -272,11 +330,15 @@ static ssize_t calibration_mode_store(struct device_driver *driver,
 	return count;
 }
 
+static DRIVER_ATTR_RO(temperature);
 static DRIVER_ATTR_RW(health_mode);
 static DRIVER_ATTR_RW(calibration_mode);
 
 static struct attribute *acer_wmi_battery_attrs[] = {
-	&driver_attr_health_mode.attr, &driver_attr_calibration_mode.attr, NULL
+	&driver_attr_temperature.attr,
+	&driver_attr_health_mode.attr,
+	&driver_attr_calibration_mode.attr,
+	NULL
 };
 
 ATTRIBUTE_GROUPS(acer_wmi_battery);
