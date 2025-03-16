@@ -13,7 +13,7 @@ accurate battery capacity estimates.
 
 The driver has been developed on an Acer Swift 3
 (SF314-34) laptop. Users have reported that it also works on other Acer laptops.
-A list of those models can be found [here](MODELS.md)
+A list of those models can be found [here](MODELS.md).
 Any feedback on how it works on Acer laptops not found on this list is appreciated.
 
 ## Building
