@@ -9,7 +9,8 @@ provides through the Acer Care Center on Windows: a health mode that
 limits the battery charge to 80% with the goal of preserving your
 battery's capacity and a battery calibration mode which puts your
 battery through a controlled charge-discharge cycle to provide more
-accurate battery capacity estimates.
+accurate battery capacity estimates. It can also be used to read the
+battery temperature.
 
 The driver has been developed on an Acer Swift 3
 (SF314-34) laptop. Users have reported that it also works on other Acer laptops.
@@ -59,7 +60,6 @@ can be started as follows:
 echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
 ```
 
-
 The calibration disables health mode and charges
 to 100%. Then it discharges and recharges the battery
 once. This can take a long time and for accurate
@@ -70,6 +70,13 @@ since the WMI event that indicates the completion
 of the calibration is not yet handled by the module:
 ```
 echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
+```
+
+### Battery Temperature
+
+The temperature of the battery in millidegree Celsius can be read as follows:
+```
+cat /sys/bus/wmi/drivers/acer-wmi-battery/temperature
 ```
 
 ### Related work
