@@ -19,13 +19,13 @@ Any feedback on how it works on Acer laptops not found on this list is appreciat
 ## Building
 
 Make sure that you have the kernel headers for your kernel installed
-and type `make` in the cloned project directory. In more detail,
+and type `make KERNELVERSION=$(uname -r)` in the cloned project directory. In more detail,
 on a Debian or Ubuntu system, you can build by:
 ```
 sudo apt install build-essential linux-headers-$(uname -r) git
 git clone https://github.com/frederik-h/acer-wmi-battery.git
 cd acer-wmi-battery
-make
+make KERNELVERSION=$(uname -r)
 ```
 
 ## Using
@@ -72,7 +72,33 @@ of the calibration is not yet handled by the module:
 echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/calibration_mode
 ```
 
-### Related work
+## Persistent installation (DKMS)
+
+If you found this driver to be working on your laptop, you may want to install it into your system for ease of use.
+
+1) Install DKMS and generic kernel headers (this will always get you the latest headers), on Debian or Ubuntu it can be done with:
+
+```
+sudo apt install dkms linux-headers-generic
+```
+
+2) Install the driver: in the cloned project directory execute:
+
+```
+chmod +x install.sh uninstall.sh
+sudo ./install.sh
+```
+
+The driver will now automatically load at boot and be recompiled after a kernel upgrade. Reboot to use it.
+
+### Uninstallation
+In the cloned project directory execute:
+
+```
+sudo ./uninstall.sh
+```
+
+## Related work
 
 There exists [another driver](https://github.com/maxco2/acer-battery-wmi) with
 similar functionality of which I have not been aware when starting the work
