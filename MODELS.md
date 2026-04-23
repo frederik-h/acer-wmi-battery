@@ -46,6 +46,8 @@ Users have reported that the driver works on the following Acer laptops:
   - Go SFG16-72 https://github.com/frederik-h/acer-wmi-battery/issues/59
   - X SFX14-71G https://github.com/frederik-h/acer-wmi-battery/issues/68
   - X 16 (SFX16-61G) https://github.com/frederik-h/acer-wmi-battery/issues/117
+- TravelMate P
+  - TravelMate P215-54 
 
 ## Not working
 
