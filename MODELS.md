@@ -15,6 +15,7 @@ Users have reported that the driver works on the following Acer laptops:
   - A515-45-R6BL https://github.com/frederik-h/acer-wmi-battery/issues/56,
   - A515-45-R74N https://github.com/frederik-h/acer-wmi-battery/issues/72
   - A515-46-R14K https://github.com/frederik-h/acer-wmi-battery/issues/58
+  - A515-56 https://github.com/frederik-h/acer-wmi-battery/issues/141
 - Aspire 7
   - A715-42G https://github.com/frederik-h/acer-wmi-battery/issues/69
 - Enduro
