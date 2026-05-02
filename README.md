@@ -38,6 +38,18 @@ change any health or calibration mode settings of your system:
 sudo insmod acer-wmi-battery.ko
 ```
 
+If you would like to load the kernel module and make it persistent across reboots:
+
+```
+make install
+```
+
+If you would like to remove the kernel module and related configuration:
+
+```
+make uninstall
+```
+
 ### Health mode
 
 The charge limit can then be enabled as follows:
