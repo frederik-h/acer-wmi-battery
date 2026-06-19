@@ -29,6 +29,21 @@ cd acer-wmi-battery
 make
 ```
 
+## Installation via DKMS
+
+With [DKMS](https://github.com/dell/dkms) the module is built and installed
+for the current kernel and rebuilt automatically on every kernel update.
+From the cloned repository:
+```
+sudo dkms add .
+sudo dkms autoinstall
+```
+The shipped `dkms.conf` passes the target kernel version to the build
+(`make KVERSION=$kernelver`), so the module is always built against the
+kernel it is installed for rather than the running one. To enable the
+charge limit at boot, use the usual `/etc/modules-load.d/` and
+`/etc/modprobe.d/` drop-ins (see [Using](#using)).
+
 ## Using
 
 Loading the module without any parameters does not
