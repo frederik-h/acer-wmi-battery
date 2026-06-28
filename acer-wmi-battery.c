@@ -363,6 +363,7 @@ static const struct wmi_device_id acer_wmi_battery_id_table[] = {
 static struct wmi_driver acer_wmi_battery_driver = {
 	.driver = { .name = "acer-wmi-battery",
 		    .groups = acer_wmi_battery_groups },
+	.id_table = acer_wmi_battery_id_table,
 };
 
 static int __init acer_battery_init(void)

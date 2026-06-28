@@ -29,6 +29,12 @@ cd acer-wmi-battery
 make
 ```
 
+To install the module for the currently running kernel so that `modprobe`
+and `/etc/modules-load.d` can find it:
+```
+sudo make install
+```
+
 ## Using
 
 Loading the module without any parameters does not
@@ -36,6 +42,11 @@ change any health or calibration mode settings of your system:
 
 ```
 sudo insmod acer-wmi-battery.ko
+```
+
+If the module has been installed, it can also be loaded with:
+```
+sudo modprobe acer-wmi-battery
 ```
 
 ### Health mode
