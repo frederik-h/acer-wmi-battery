@@ -35,6 +35,19 @@ and `/etc/modules-load.d` can find it:
 sudo make install
 ```
 
+To install the module with DKMS so that it is rebuilt automatically when new
+kernels are installed:
+```
+sudo apt install dkms
+sudo dkms add .
+sudo dkms install acer-wmi-battery/0.1.0
+```
+
+The DKMS installation can be removed with:
+```
+sudo dkms remove acer-wmi-battery/0.1.0 --all
+```
+
 ## Using
 
 Loading the module without any parameters does not
