@@ -43,6 +43,7 @@ Users have reported that the driver works on the following Acer laptops:
   - 3 SF314-43 https://github.com/frederik-h/acer-wmi-battery/issues/83
   - Edge SFE16-44-R48X https://github.com/frederik-h/acer-wmi-battery/issues/79
   - Go 14 SFG14-63-R6PU https://github.com/frederik-h/acer-wmi-battery/issues/59
+  - Go 14 SFG14-71 https://github.com/frederik-h/acer-wmi-battery/issues/157
   - Go SFG16-72 https://github.com/frederik-h/acer-wmi-battery/issues/59
   - X SFX14-71G https://github.com/frederik-h/acer-wmi-battery/issues/68
   - X 16 (SFX16-61G) https://github.com/frederik-h/acer-wmi-battery/issues/117
