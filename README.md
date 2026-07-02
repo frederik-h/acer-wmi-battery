@@ -29,6 +29,25 @@ cd acer-wmi-battery
 make
 ```
 
+To install the module for the currently running kernel so that `modprobe`
+and `/etc/modules-load.d` can find it:
+```
+sudo make install
+```
+
+To install the module with DKMS so that it is rebuilt automatically when new
+kernels are installed:
+```
+sudo apt install dkms
+sudo dkms add .
+sudo dkms install acer-wmi-battery/0.1.0
+```
+
+The DKMS installation can be removed with:
+```
+sudo dkms remove acer-wmi-battery/0.1.0 --all
+```
+
 ## Using
 
 Loading the module without any parameters does not
@@ -36,6 +55,11 @@ change any health or calibration mode settings of your system:
 
 ```
 sudo insmod acer-wmi-battery.ko
+```
+
+If the module has been installed, it can also be loaded with:
+```
+sudo modprobe acer-wmi-battery
 ```
 
 ### Health mode
