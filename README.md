@@ -29,6 +29,19 @@ cd acer-wmi-battery
 make
 ```
 
+The module is built with the same toolchain that was used to build
+your kernel. If your kernel was compiled with clang (e.g. the default
+CachyOS kernel, which is built with clang and ThinLTO), the Makefile
+detects this automatically and builds the module with the LLVM
+toolchain. In this case, make sure that the LLVM tools are installed
+(the `clang` and `llvm` packages on Arch-based distributions).
+
+It is also possible to build the module for a kernel that is not
+currently running by passing its version via `KVER`, e.g.:
+```
+make KVER=6.18.50-1-cachyos-lts
+```
+
 ## Using
 
 Loading the module without any parameters does not
